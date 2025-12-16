@@ -1,0 +1,202 @@
+import React, { useState, useMemo } from 'react';
+import './App.css';
+
+// --- 데이터 ---
+const initialMenuItems = [
+  {
+    id: 1,
+    name: '아메리카노 (ICE)',
+    price: 4000,
+    description: '시원하고 깔끔한 클래식 커피',
+    options: [{ name: '샷 추가', price: 500 }, { name: '시럽 추가', price: 0 }],
+    image: '/americano-ice.jpg',
+  },
+  {
+    id: 2,
+    name: '아메리카노 (HOT)',
+    price: 4000,
+    description: '따뜻하고 부드러운 클래식 커피',
+    options: [{ name: '샷 추가', price: 500 }, { name: '시럽 추가', price: 0 }],
+    image: '/americano-hot.jpg',
+  },
+  {
+    id: 3,
+    name: '카페라떼',
+    price: 5000,
+    description: '부드러운 우유와 에스프레소의 조화',
+    options: [{ name: '샷 추가', price: 500 }, { name: '두유로 변경', price: 500 }],
+    image: '/caffe-latte.jpg',
+  },
+];
+
+// --- 컴포넌트 ---
+
+const Header = ({ activeView, setActiveView }) => (
+  <header className="app-header">
+    <h1 className="logo">COZY</h1>
+    <nav>
+      <button 
+        className={activeView === 'order' ? 'active' : ''} 
+        onClick={() => setActiveView('order')}>
+        주문하기
+      </button>
+      <button 
+        className={activeView === 'admin' ? 'active' : ''} 
+        onClick={() => setActiveView('admin')}>
+        관리자
+      </button>
+    </nav>
+  </header>
+);
+
+const MenuItem = ({ item, onAddToCart }) => {
+  const [selectedOptions, setSelectedOptions] = useState([]);
+
+  const handleOptionChange = (option, isChecked) => {
+    if (isChecked) {
+      setSelectedOptions(prev => [...prev, option]);
+    } else {
+      setSelectedOptions(prev => prev.filter(opt => opt.name !== option.name));
+    }
+  };
+
+  const handleAddClick = () => {
+    onAddToCart(item, selectedOptions);
+    setSelectedOptions([]); // Reset options after adding
+    // Uncheck checkboxes
+    document.querySelectorAll(`input[name="option-${item.id}"]:checked`).forEach(el => el.checked = false);
+  };
+  
+  return (
+    <div className="menu-item-card">
+      <img src={item.image} alt={item.name} className="item-image" />
+      <h3 className="item-name">{item.name}</h3>
+      <p className="item-price">{item.price.toLocaleString()}원</p>
+      <p className="item-description">{item.description}</p>
+      <div className="item-options">
+        {item.options.map(opt => (
+          <div key={opt.name}>
+            <input 
+              type="checkbox" 
+              id={`${item.id}-${opt.name}`} 
+              name={`option-${item.id}`}
+              onChange={(e) => handleOptionChange(opt, e.target.checked)} 
+            />
+            <label htmlFor={`${item.id}-${opt.name}`}>{opt.name} (+{opt.price.toLocaleString()}원)</label>
+          </div>
+        ))}
+      </div>
+      <button className="add-to-cart-btn" onClick={handleAddClick}>담기</button>
+    </div>
+  );
+};
+
+const Menu = ({ items, onAddToCart }) => (
+  <section className="menu-section">
+    <div className="menu-grid">
+      {items.map(item => <MenuItem key={item.id} item={item} onAddToCart={onAddToCart} />)}
+    </div>
+  </section>
+);
+
+const Cart = ({ items, onRemoveItem }) => {
+    const total = useMemo(() => 
+        items.reduce((sum, item) => sum + item.totalPrice, 0),
+    [items]);
+
+  return (
+    <section className="cart-section">
+      <h2 className="cart-title">장바구니</h2>
+      <div className="cart-layout">
+        <div className="cart-order-list">
+          {items.length === 0 ? (
+            <p>장바구니가 비어있습니다.</p>
+          ) : (
+            items.map(item => (
+              <div key={item.cartId} className="cart-item">
+                <div className="cart-item-info">
+                  <span className="cart-item-name">
+                    {item.name} 
+                    {item.options.length > 0 && ` (${item.options.map(o => o.name).join(', ')})`}
+                    &nbsp;x {item.quantity}
+                  </span>
+                  <span className="cart-item-price">{(item.totalPrice).toLocaleString()}원</span>
+                </div>
+                <button onClick={() => onRemoveItem(item.cartId)} className="remove-item-btn">삭제</button>
+              </div>
+            ))
+          )}
+        </div>
+        <div className="cart-summary-area">
+          <div className="cart-summary">
+            <span className="total-label">총 금액</span>
+            <span className="total-price">{total.toLocaleString()}원</span>
+          </div>
+          <button className="place-order-btn">주문하기</button>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+
+function App() {
+  const [activeView, setActiveView] = useState('order');
+  const [menuItems] = useState(initialMenuItems);
+  const [cartItems, setCartItems] = useState([]);
+
+  const handleAddToCart = (item, options) => {
+    const optionPrice = options.reduce((sum, opt) => sum + opt.price, 0);
+    const finalPrice = item.price + optionPrice;
+
+    // A unique ID for the item with its specific options
+    const cartId = `${item.id}-${options.map(o => o.name).sort().join('-')}`;
+    
+    setCartItems(prevItems => {
+        const existingItem = prevItems.find(i => i.cartId === cartId);
+        
+        if (existingItem) {
+            return prevItems.map(i => 
+                i.cartId === cartId 
+                ? { ...i, quantity: i.quantity + 1, totalPrice: (i.unitPrice) * (i.quantity + 1) } 
+                : i
+            );
+        } else {
+            return [
+                ...prevItems,
+                { 
+                    ...item,
+                    cartId,
+                    options,
+                    quantity: 1,
+                    unitPrice: finalPrice,
+                    totalPrice: finalPrice,
+                },
+            ];
+        }
+    });
+  };
+
+  const handleRemoveFromCart = (cartId) => {
+      setCartItems(prevItems => prevItems.filter(item => item.cartId !== cartId));
+  };
+
+
+  return (
+    <div className="app-container">
+      <Header activeView={activeView} setActiveView={setActiveView} />
+      <main>
+        {activeView === 'order' ? (
+          <>
+            <Menu items={menuItems} onAddToCart={handleAddToCart} />
+            <Cart items={cartItems} onRemoveItem={handleRemoveFromCart} />
+          </>
+        ) : (
+          <div>관리자 화면이 여기에 표시됩니다.</div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+export default App;
