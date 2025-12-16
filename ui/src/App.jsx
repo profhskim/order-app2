@@ -5,7 +5,7 @@ import Menu from './components/Menu';
 import Cart from './components/Cart';
 import AdminView from './components/AdminView';
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 function App() {
   const [activeView, setActiveView] = useState('order');
