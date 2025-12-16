@@ -1,70 +1,74 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import Header from './components/Header';
 import Menu from './components/Menu';
 import Cart from './components/Cart';
 import AdminView from './components/AdminView';
 
-// --- 데이터 ---
-const initialMenuItems = [
-  {
-    id: 1,
-    name: '아메리카노 (ICE)',
-    price: 4000,
-    description: '시원하고 깔끔한 클래식 커피',
-    options: [{ name: '샷 추가', price: 500 }, { name: '시럽 추가', price: 0 }],
-    image: '/americano-ice.jpg',
-  },
-  {
-    id: 2,
-    name: '아메리카노 (HOT)',
-    price: 4000,
-    description: '따뜻하고 부드러운 클래식 커피',
-    options: [{ name: '샷 추가', price: 500 }, { name: '시럽 추가', price: 0 }],
-    image: '/americano-hot.jpg',
-  },
-  {
-    id: 3,
-    name: '카페라떼',
-    price: 5000,
-    description: '부드러운 우유와 에스프레소의 조화',
-    options: [{ name: '샷 추가', price: 500 }, { name: '두유로 변경', price: 500 }],
-    image: '/caffe-latte.jpg',
-  },
-];
-
-const initialStock = [
-    { id: 1, name: '아메리카노 (ICE)', stock: 10 },
-    { id: 2, name: '아메리카노 (HOT)', stock: 10 },
-    { id: 3, name: '카페라떼', stock: 10 },
-];
-
-const initialOrders = [];
-
-// --- 컴포넌트 ---
+const API_URL = 'http://localhost:3001/api';
 
 function App() {
   const [activeView, setActiveView] = useState('order');
-  const [menuItems] = useState(initialMenuItems);
+  const [menuItems, setMenuItems] = useState([]);
   const [cartItems, setCartItems] = useState([]);
-  const [stock, setStock] = useState(initialStock);
-  const [orders, setOrders] = useState(initialOrders);
+  const [stock, setStock] = useState([]);
+  const [orders, setOrders] = useState([]);
+
+  const fetchData = useCallback(async () => {
+    try {
+      if (activeView === 'order') {
+        const response = await fetch(`${API_URL}/menus`);
+        const data = await response.json();
+        setMenuItems(data);
+      } else { // admin view
+        const ordersRes = await fetch(`${API_URL}/admin/orders`);
+        const ordersData = await ordersRes.json();
+        setOrders(ordersData);
+
+        const stockRes = await fetch(`${API_URL}/admin/menus`);
+        const stockData = await stockRes.json();
+        setStock(stockData);
+      }
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    }
+  }, [activeView]);
+
+  useEffect(() => {
+    fetchData();
+    
+    // Set up polling for admin view
+    if (activeView === 'admin') {
+      const intervalId = setInterval(fetchData, 5000); // Poll every 5 seconds
+      return () => clearInterval(intervalId);
+    }
+  }, [fetchData, activeView]);
 
   const handleAddToCart = (item, options) => {
     const optionPrice = options.reduce((sum, opt) => sum + opt.price, 0);
     const finalPrice = item.price + optionPrice;
-    const cartId = `${item.id}-${options.map(o => o.name).sort().join('-')}`;
+    
+    // Create a unique ID for the cart item based on the menu item and its selected options
+    const cartId = `${item.id}-${options.map(o => o.id).sort().join('-')}`;
     
     setCartItems(prevItems => {
         const existingItem = prevItems.find(i => i.cartId === cartId);
         if (existingItem) {
             return prevItems.map(i => 
                 i.cartId === cartId 
-                ? { ...i, quantity: i.quantity + 1, totalPrice: (i.unitPrice) * (i.quantity + 1) } 
+                ? { ...i, quantity: i.quantity + 1, totalPrice: i.unitPrice * (i.quantity + 1) } 
                 : i
             );
         } else {
-            return [...prevItems, { ...item, cartId, options, quantity: 1, unitPrice: finalPrice, totalPrice: finalPrice }];
+            return [...prevItems, { 
+              ...item,
+              menu_id: item.id, // for order payload
+              cartId, 
+              options, 
+              quantity: 1, 
+              unitPrice: finalPrice, 
+              totalPrice: finalPrice 
+            }];
         }
     });
   };
@@ -73,60 +77,95 @@ function App() {
       setCartItems(prevItems => prevItems.filter(item => item.cartId !== cartId));
   };
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
       if (cartItems.length === 0) return;
-      const newOrder = {
-          id: Date.now(),
-          date: new Date(),
-          items: cartItems.map(({ id, name, quantity, options }) => ({ id, name, quantity, options })),
-          total: cartItems.reduce((sum, item) => sum + item.totalPrice, 0),
-          status: '주문 접수',
+
+      const orderPayload = {
+        items: cartItems.map(item => ({
+          menu_id: item.menu_id,
+          quantity: item.quantity,
+          options: item.options.map(opt => opt.id),
+          total_price: item.totalPrice,
+        }))
       };
-      setOrders(prevOrders => [newOrder, ...prevOrders]);
-      setCartItems([]);
+
+      try {
+        const response = await fetch(`${API_URL}/orders`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderPayload),
+        });
+
+        if (!response.ok) {
+          throw new Error('Order placement failed');
+        }
+        
+        setCartItems([]);
+        fetchData(); // Refresh data
+        alert('주문이 성공적으로 접수되었습니다.');
+      } catch (error) {
+        console.error("Failed to place order:", error);
+        alert('주문 처리 중 오류가 발생했습니다.');
+      }
   };
 
-  const handleStockChange = (itemId, amount) => {
-      setStock(prevStock => prevStock.map(item =>
-          item.id === itemId ? { ...item, stock: Math.max(0, item.stock + amount) } : item
+  const handleStockChange = async (itemId, amount) => {
+    const item = stock.find(s => s.id === itemId);
+    if (!item) return;
+
+    const newStockValue = Math.max(0, item.stock + amount);
+
+    try {
+      const response = await fetch(`${API_URL}/admin/menus/${itemId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stock: newStockValue }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Stock update failed');
+      }
+      
+      // On success, update the state directly
+      setStock(prevStock => prevStock.map(s =>
+        s.id === itemId ? { ...s, stock: newStockValue } : s
       ));
+
+    } catch (error) {
+      console.error('Failed to update stock:', error);
+      alert('재고 업데이트에 실패했습니다.');
+    }
   };
   
-  const handleUpdateOrderStatus = (orderId, orderItems) => {
-    const orderToUpdate = orders.find(order => order.id === orderId);
-    if (!orderToUpdate) return;
+  const handleUpdateOrderStatus = async (orderId) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
 
     let newStatus;
-    if (orderToUpdate.status === '주문 접수') {
-      newStatus = '제조 중';
-    } else if (orderToUpdate.status === '제조 중') {
-      newStatus = '제조 완료';
-    } else {
-      return; // Already completed or other status
+    switch (order.status) {
+      case '주문 접수':
+        newStatus = '제조 중';
+        break;
+      case '제조 중':
+        newStatus = '완료';
+        break;
+      default:
+        return; 
     }
 
-    // If the order is being completed, update the stock first
-    if (newStatus === '제조 완료') {
-      orderItems.forEach(orderItem => {
-        // Find the corresponding stock item
-        const stockItem = stock.find(s => s.id === orderItem.id);
-        if (stockItem) {
-          // Use a function for the state update to ensure it's based on the latest state
-          setStock(prevStock => prevStock.map(s => 
-            s.id === orderItem.id 
-              ? { ...s, stock: Math.max(0, s.stock - orderItem.quantity) } 
-              : s
-          ));
-        }
+    try {
+      const response = await fetch(`${API_URL}/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
       });
-    }
 
-    // Then, update the order status
-    setOrders(prevOrders =>
-      prevOrders.map(order =>
-        order.id === orderId ? { ...order, status: newStatus } : order
-      )
-    );
+      if (!response.ok) throw new Error('Order status update failed');
+
+      fetchData(); // Refresh data
+    } catch (error) {
+      console.error('Failed to update order status:', error);
+    }
   };
 
   return (

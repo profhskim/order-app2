@@ -7,7 +7,7 @@ const AdminView = ({ orders, stock, onStockChange, onUpdateStatus }) => (
     <>
         <AdminDashboard orders={orders} />
         <StockStatus stock={stock} onStockChange={onStockChange} />
-        <OrderStatus orders={orders} onUpdateStatus={onUpdateStatus} />
+        <OrderStatus orders={orders} stock={stock} onUpdateStatus={onUpdateStatus} />
     </>
 );
 
