@@ -74,8 +74,8 @@ body {
 }
 
 .menu-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 1.5rem;
 }
 
@@ -87,6 +87,8 @@ body {
   padding: 1.5rem;
   text-align: center;
   box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  flex: 1 1 280px; /* Use flexbox for responsive wrapping */
+  max-width: 400px; /* Prevent cards from getting too wide on some screen sizes */
 }
 
 .item-image {
