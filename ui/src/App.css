@@ -1,365 +1,99 @@
-/* General Body Styles */
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #f4f4f5;
-  color: #1a1a1a;
-  /* Center the app content */
-  display: flex;
-  justify-content: center;
-  align-items: flex-start; /* Align to the top */
-  min-height: 100vh;
-  padding-top: 2rem; /* Add some space from the top */
-}
+/* --- Responsive Design --- */
 
-/* App Container */
-.app-container {
-  width: 100%;
-  max-width: 1200px;
-  /* margin: 0 auto; */ /* Replaced by body flex centering */
-  padding: 20px;
-}
-
-/* Header */
-.app-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  margin-bottom: 2rem;
-}
-
-.logo {
-  font-size: 1.8rem;
-  font-weight: bold;
-  margin: 0;
-}
-
-.app-header nav {
-  background-color: #007bff;
-  border-radius: 6px;
-}
-
-.app-header nav button {
-  font-size: 1rem;
-  padding: 0.5rem 1.5rem;
-  /* margin-left: 0.5rem; */ /* Removed margin */
-  border: none;
-  background-color: transparent;
-  color: #ffffff;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-.app-header nav button:hover {
-  background-color: #0056b3;
-}
-
-.app-header nav button.active {
-  background-color: #004a99;
-  font-weight: bold;
-}
-
-/* Menu Section */
-.menu-section {
-  margin-bottom: 2rem;
-}
-
-.menu-grid {
-  /* Use flexbox for horizontal layout */
-  display: flex;
-  gap: 1.5rem;
-  overflow-x: auto; /* Allow horizontal scrolling if needed */
-  padding-bottom: 1rem; /* Add some padding for scrollbar */
-}
-
-/* Menu Item Card */
-.menu-item-card {
-  background-color: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 1.5rem;
-  text-align: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-  /* Set a fixed width for horizontal items */
-  flex: 0 0 280px;
-}
-
-.item-image {
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
-  border-radius: 6px;
-  margin-bottom: 1rem;
-  border: 1px solid #e0e0e0;
-}
-
-
-.item-name {
-  font-size: 1.25rem;
-  margin: 0.5rem 0;
-}
-
-.item-price {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 1rem;
-}
-
-.item-description {
-    font-size: 0.9rem;
-    color: #6c757d;
-    min-height: 40px;
-}
-
-.item-options {
-  text-align: left;
-  margin: 1rem 0;
-  font-size: 0.95rem;
-}
-
-.item-options div {
-  margin-bottom: 0.5rem;
-}
-.item-options input {
-    margin-right: 0.5rem;
-}
-
-
-.add-to-cart-btn {
-  width: 100%;
-  padding: 0.75rem;
-  font-size: 1rem;
-  font-weight: bold;
-  color: #007bff;
-  background-color: white;
-  border: 2px solid #007bff;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-.add-to-cart-btn:hover {
-  background-color: #007bff;
-  color: white;
-}
-
-/* Cart Section */
-.cart-section {
-  background-color: #ffffff;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.cart-title {
-  margin-top: 0;
-  font-size: 1.5rem;
-  border-bottom: 2px solid #f0f0f0;
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
-}
-
-.cart-layout {
-  display: flex;
-  gap: 2rem;
-}
-
-.cart-order-list {
-  flex-grow: 1;
-}
-
-.cart-summary-area {
-  flex: 0 0 300px;
-  padding: 1.5rem;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-}
-
-
-.cart-items p {
-    color: #6c757d;
-}
-
-/* Cart Item */
-.cart-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 0;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.cart-item:last-child {
-    border-bottom: none;
-}
-
-.cart-item-info {
-    display: flex;
-    justify-content: space-between;
-    flex-grow: 1;
-    align-items: center;
-}
-
-.cart-item-name {
-    font-size: 1rem;
-    flex-basis: 70%;
-    text-align: left;
-}
-
-.cart-item-price {
-    font-weight: 500;
-    text-align: right;
-    flex-basis: 30%;
-}
-
-.remove-item-btn {
-    background: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 0.3rem 0.7rem;
-    font-size: 0.8rem;
-    cursor: pointer;
-    margin-left: 1.5rem;
-}
-
-.remove-item-btn:hover {
-    background: #c82333;
-}
-
-.cart-summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 2px solid #e0e0e0;
-}
-
-.total-label {
-  font-size: 1.2rem;
-  font-weight: bold;
-}
-
-.total-price {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #007bff;
-}
-
-.place-order-btn {
-  width: 100%;
-  padding: 1rem;
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: white;
-  background-color: #007bff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-top: 1.5rem;
-  transition: background-color 0.2s ease-in-out;
-}
-
-.place-order-btn:hover {
-  background-color: #0056b3;
-}
-
-/* Admin View Styles */
-.admin-section {
-    background-color: #ffffff;
-    padding: 1.5rem 2rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    margin-bottom: 2rem;
-}
-
-.admin-section h2 {
-    margin-top: 0;
-    font-size: 1.5rem;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 1rem;
-    margin-bottom: 1rem;
-}
-
-.dashboard-summary {
-    display: flex;
-    justify-content: space-around;
-    font-size: 1.1rem;
-    padding: 1rem 0;
-}
-
-.stock-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1.5rem;
-}
-
-.stock-item {
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 1rem;
-    text-align: center;
-}
-
-.stock-info {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0.5rem 0;
-}
-
-.stock-item p {
-    margin: 0;
-}
-
-.stock-item button {
-    margin: 0 0.25rem;
-    padding: 0.25rem 0.75rem;
-    font-size: 1rem;
-    cursor: pointer;
-}
-
-.stock-status-정상 { color: #28a745; font-weight: bold; }
-.stock-status-주의 { color: #ffc107; font-weight: bold; }
-.stock-status-품절 { color: #dc3545; font-weight: bold; }
-
-.order-list {
-    display: flex;
+/* For tablets and mobile phones */
+@media (max-width: 768px) {
+  /* General Adjustments */
+  body {
+    padding-top: 1rem;
+  }
+  .app-container {
+    padding: 10px;
+  }
+  .app-header {
     flex-direction: column;
     gap: 1rem;
-}
-
-.order-list-item {
-    display: grid;
-    grid-template-columns: 1fr 2fr 1fr 1fr;
-    align-items: center;
     padding: 1rem;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    gap: 1rem;
-}
-
-.order-list-item button {
+    margin-bottom: 1rem;
+  }
+  .app-header nav button {
     padding: 0.5rem 1rem;
-    cursor: pointer;
-    border: 1px solid #007bff;
-    background-color: white;
-    color: #007bff;
-    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+
+  /* Cart Layout */
+  .cart-layout {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .cart-summary-area {
+    flex: 0 0 auto; /* Reset flex-basis */
+    padding: 1rem;
+  }
+  .cart-section {
+    padding: 1.5rem;
+  }
+
+  /* Admin View */
+  .admin-section {
+    padding: 1rem 1.5rem;
+  }
+  .admin-section h2 {
+    font-size: 1.3rem;
+  }
+
+  /* Order List Item */
+  .order-list-item {
+    grid-template-columns: 1fr; /* Stack items vertically */
+    text-align: center;
+    gap: 0.5rem;
+  }
+  .order-list-item span:nth-child(2) {
+      /* Make menu items list more readable */
+      font-weight: bold;
+      font-size: 1.1em;
+  }
+  .order-list-item button {
+      justify-self: center;
+      width: 80%;
+  }
+
+  /* Stock Grid */
+  .stock-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+
 }
 
-.order-list-item button:hover {
-    background-color: #f0f0f0;
+/* For smaller mobile phones */
+@media (max-width: 480px) {
+  .app-header {
+    padding: 0.75rem;
+  }
+  .logo {
+    font-size: 1.5rem;
+  }
+  .menu-item-card {
+    flex: 0 0 220px; /* Make menu cards a bit smaller */
+    padding: 1rem;
+  }
+  .item-name {
+      font-size: 1.1rem;
+  }
+  .item-price {
+      font-size: 1rem;
+  }
+  .cart-section, .admin-section {
+    padding: 1rem;
+  }
+  .total-label {
+    font-size: 1rem;
+  }
+  .total-price {
+    font-size: 1.25rem;
+  }
+  .place-order-btn {
+      padding: 0.8rem;
+      font-size: 1rem;
+  }
 }
